@@ -17,11 +17,13 @@ export default class Game extends Container {
     private mousePosition: Point;
     private shotCooldown: number;
     private isShooting: boolean;
+    private config: any;
 
     constructor(config: any, app: any) {
         super();
 
-        this.player = new Player(config.player);
+        this.config = config;
+        this.player = new Player(this.config.player);
         this.projectiles = [];
         this.enemies = [];
         this.spawnTimer = 0;
@@ -31,7 +33,6 @@ export default class Game extends Container {
         this.shotCooldown = 500;
 
         this.addChild(this.player);
-
 
         window.addEventListener("mousedown", (e) => this.onMouseDown(e));
         window.addEventListener("mousemove", (e) => this.onMouseMove(e));
@@ -47,7 +48,6 @@ export default class Game extends Container {
     }
 
     private onMouseMove(event: MouseEvent) {
-        // Update the stored mouse position
         this.mousePosition.set(event.clientX, event.clientY);
     }
 
@@ -64,7 +64,6 @@ export default class Game extends Container {
     }
 
     private shootProjectile() {
-        // Use the latest stored mouse position
         const projectile = this.player.shootProjectile(this.mousePosition);
 
         this.projectiles.push(projectile);
@@ -72,18 +71,8 @@ export default class Game extends Container {
     }
 
     private spawnEnemy() {
-        const enemyConfig = {
-            startX: Math.random() * window.innerWidth,
-            startY: Math.random() * window.innerHeight,
-            bodyColor: 0xff0000,
-            bodyRadius: 20,
-            legColor: 0x000000,
-            legWidth: 10,
-            legHeight: 20,
-            speed: 2 + Math.random() * 3,
-        };
-
-        const enemy = new Enemy(enemyConfig);
+        const appCenter = new Point(this.app.renderer.width / 2, this.app.renderer.height / 2);
+        const enemy = new Enemy(this.config.enemy, appCenter);
         this.enemies.push(enemy);
         this.addChild(enemy);
     }
@@ -91,7 +80,7 @@ export default class Game extends Container {
     private updateEnemies(delta: number) {
         for (let i = this.enemies.length - 1; i >= 0; i--) {
             const enemy = this.enemies[i];
-            enemy.update(delta, this.app);
+            enemy.update(delta, this.app, new Point(this.player.x, this.player.y));
 
             if (
                 enemy.x < 0 ||
@@ -116,7 +105,8 @@ export default class Game extends Container {
                 const dy = projectile.graphic.y - enemy.y;
                 const distance = Math.sqrt(dx * dx + dy * dy);
 
-                if (distance < (enemy.width / 2)) {
+                // Check for circular collision
+                if (distance < (enemy.width / 2 + projectile.graphic.width / 2)) {
                     this.removeChild(projectile.graphic);
                     this.projectiles.splice(i, 1);
 
@@ -142,10 +132,10 @@ export default class Game extends Container {
         this.updateEnemies(delta);
         this.checkCollisions();
 
-        this.spawnTimer -= delta;
-        if (this.spawnTimer <= 0) {
+        this.spawnTimer -= delta * this.app.ticker.elapsedMS;
+        if (this.spawnTimer <= 0 && this.enemies.length < 4) {
             this.spawnEnemy();
-            this.spawnTimer = 2000 + Math.random() * 2000;
+            this.spawnTimer = 500 + Math.random() * 2000;
         }
     }
 

@@ -1,5 +1,5 @@
 import { Application } from "pixi.js";
-import Game from "./components/Game";
+import Game from "./game/Game";
 
 export default class App extends Application {
     private _config: any;
