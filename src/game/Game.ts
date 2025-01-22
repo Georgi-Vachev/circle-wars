@@ -1,10 +1,12 @@
 import { Container, Point, Application } from "pixi.js";
+import gsap from "gsap";
 import Player from "./Player";
 import { checkCollisions } from "../util";
 import InputManager from "./InputManager";
 import EnemyManager from "./EnemyManager";
 import ProjectileManager, { Projectile } from "./ProjectileManager";
 import GameEntity from "./GameEntity";
+import GameOverScreen from "./GameOverScreen";
 
 export default class Game extends Container {
     private player: Player;
@@ -14,6 +16,7 @@ export default class Game extends Container {
     private inputManager: InputManager;
     private enemyManager: EnemyManager;
     private projectileManager: ProjectileManager;
+    private isGameOver: boolean;
 
     private config: any;
     private app: Application;
@@ -22,20 +25,18 @@ export default class Game extends Container {
     constructor(config: any, app: Application) {
         super();
 
+        this.config = config;
+        this.app = app;
         this.inputManager = new InputManager();
-
-        // Pass projectileManager to EnemyManager so enemies can add bullets
         this.projectileManager = new ProjectileManager(app);
         this.enemyManager = new EnemyManager(config, app, this.projectileManager);
-
-        this.config = config;
         this.player = new Player(this.config.player);
-        this.app = app;
 
         this.shotCooldown = 500;
         this.isShooting = false;
         this.mousePosition = new Point();
         this.spawnTimer = 0;
+        this.isGameOver = false;
 
         this.addChild(this.player);
         this.addChild(this.enemyManager);
@@ -74,7 +75,7 @@ export default class Game extends Container {
         this.projectileManager.addProjectile(projectile);
     }
 
-    private checkCollisions(): void {
+    private checkCollisions() {
         const allProjectiles = this.projectileManager.getProjectiles();
         const enemies = this.enemyManager.getEnemies();
 
@@ -103,7 +104,8 @@ export default class Game extends Container {
                 this.projectileManager.removeProjectileByObject(bullet);
                 this.player.takeDamage(1);
                 if (this.player.isDead()) {
-                    console.log("Player is dead!");
+                    this.gameOver();
+                    return;
                 }
             }
         }
@@ -120,13 +122,16 @@ export default class Game extends Container {
             if (distance < combinedRadius) {
                 this.player.takeDamage(1);
                 if (this.player.isDead()) {
-                    console.log("Player is dead!");
+                    this.gameOver();
+                    return;
                 }
             }
         }
     }
 
     public update(delta: number) {
+        if (this.isGameOver) return;
+
         this.player.update(delta);
         this.enemyManager.update(delta, new Point(this.player.x, this.player.y));
         this.projectileManager.update();
@@ -140,5 +145,46 @@ export default class Game extends Container {
         }
 
         this.checkCollisions();
+    }
+
+    private gameOver() {
+        if (this.isGameOver) return;
+        this.isGameOver = true;
+
+        const gameOverScreen = new GameOverScreen(() => {
+            gsap.to(gameOverScreen, {
+                duration: 0.5,
+                alpha: 0,
+                onComplete: () => {
+                    this.removeChild(gameOverScreen);
+                    this.restartGame();
+                }
+            });
+        }, {
+            screenWidth: this.app.renderer.width,
+            screenHeight: this.app.renderer.height
+        });
+
+        gameOverScreen.alpha = 0;
+        this.addChild(gameOverScreen);
+        gsap.to(gameOverScreen, { duration: 1, alpha: 1 });
+    }
+
+    private restartGame() {
+        this.enemyManager.removeChildren();
+        this.projectileManager.removeChildren();
+
+        this.removeChild(this.player);
+        this.player = new Player(this.config.player);
+        this.addChild(this.player);
+
+        this.enemyManager = new EnemyManager(this.config, this.app, this.projectileManager);
+        this.addChild(this.enemyManager);
+
+        this.shotCooldown = 500;
+        this.isShooting = false;
+        this.mousePosition.set(0, 0);
+        this.spawnTimer = 0;
+        this.isGameOver = false;
     }
 }

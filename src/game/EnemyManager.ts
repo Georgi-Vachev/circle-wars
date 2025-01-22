@@ -1,13 +1,12 @@
 import { isOutOfBounds } from "../util";
 import Enemy from "./Enemy";
 import { Container, Point, Application } from "pixi.js";
-import ProjectileManager from "./ProjectileManager"; // Need this to add projectiles
+import ProjectileManager from "./ProjectileManager";
 
 export default class EnemyManager extends Container {
     private enemies: Enemy[] = [];
     private spawnTimer = 0;
 
-    // NEW: each enemy can have a shotTimer stored in a Map or an array
     private enemyShootTimers = new WeakMap<Enemy, number>();
 
     constructor(private config: any, private app: Application, private projectileManager: ProjectileManager) {
@@ -17,18 +16,15 @@ export default class EnemyManager extends Container {
     public update(delta: number, playerPosition: Point) {
         this.spawnTimer -= delta * this.app.ticker.elapsedMS;
 
-        // Spawn logic
         if (this.spawnTimer <= 0 && this.enemies.length < 4) {
             this.spawnEnemy();
             this.spawnTimer = 500 + Math.random() * 2000;
         }
 
-        // Update enemies
         for (let i = this.enemies.length - 1; i >= 0; i--) {
             const enemy = this.enemies[i];
             enemy.update(delta, this.app, playerPosition);
 
-            // Check boundaries
             if (
                 isOutOfBounds(
                     enemy.x,
@@ -44,7 +40,6 @@ export default class EnemyManager extends Container {
                 continue;
             }
 
-            // NEW: handle enemy shooting if canShoot
             this.handleEnemyShooting(delta, enemy, playerPosition);
         }
     }
@@ -76,7 +71,6 @@ export default class EnemyManager extends Container {
         this.enemies.push(enemy);
         this.addChild(enemy);
 
-        // Initialize shoot timer
         this.enemyShootTimers.set(enemy, enemy.config.shootCooldown ?? 1000);
     }
 
@@ -88,6 +82,5 @@ export default class EnemyManager extends Container {
         const enemy = this.enemies[index];
         this.removeChild(enemy);
         this.enemies.splice(index, 1);
-        // Timer map auto-cleans for garbage-collected enemies
     }
 }

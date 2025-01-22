@@ -1,4 +1,3 @@
-// InputManager.ts
 export default class InputManager {
     public keys: Record<string, boolean> = {};
     public mouse: { x: number; y: number; isDown: boolean } = {

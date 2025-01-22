@@ -21,7 +21,6 @@ export function checkCollisions(
             const dy = projectile.graphic.y - enemy.y;
             const distance = Math.sqrt(dx * dx + dy * dy);
 
-            // Check for circular collision
             if (distance < (enemy.width / 2 + projectile.graphic.width / 2)) {
                 collisions.push({ projectileIndex: i, enemyIndex: j });
             }
