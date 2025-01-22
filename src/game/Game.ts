@@ -1,9 +1,10 @@
-import { Container, Point, Graphics, Application } from "pixi.js";
+import { Container, Point, Application } from "pixi.js";
 import Player from "./Player";
 import { checkCollisions } from "../util";
 import InputManager from "./InputManager";
 import EnemyManager from "./EnemyManager";
-import ProjectileManager from "./ProjectileManager";
+import ProjectileManager, { Projectile } from "./ProjectileManager";
+import GameEntity from "./GameEntity";
 
 export default class Game extends Container {
     private player: Player;
@@ -22,8 +23,10 @@ export default class Game extends Container {
         super();
 
         this.inputManager = new InputManager();
-        this.enemyManager = new EnemyManager(config, app);
+
+        // Pass projectileManager to EnemyManager so enemies can add bullets
         this.projectileManager = new ProjectileManager(app);
+        this.enemyManager = new EnemyManager(config, app, this.projectileManager);
 
         this.config = config;
         this.player = new Player(this.config.player);
@@ -71,17 +74,56 @@ export default class Game extends Container {
         this.projectileManager.addProjectile(projectile);
     }
 
-    private checkCollisions() {
-        // Grab references
-        const projectiles = this.projectileManager.getProjectiles();
+    private checkCollisions(): void {
+        const allProjectiles = this.projectileManager.getProjectiles();
         const enemies = this.enemyManager.getEnemies();
 
-        const collisions = checkCollisions(projectiles, enemies);
-
-        collisions.forEach(({ projectileIndex, enemyIndex }) => {
-            this.projectileManager.removeProjectile(projectileIndex);
-            this.enemyManager.removeEnemy(enemyIndex);
+        const playerBullets = allProjectiles.filter(p => p.owner === "player");
+        const collisionsPE = checkCollisions(playerBullets, enemies);
+        collisionsPE.forEach(({ projectileIndex, enemyIndex }) => {
+            const projectile = playerBullets[projectileIndex];
+            this.projectileManager.removeProjectileByObject(projectile);
+            const enemy = enemies[enemyIndex];
+            enemy.takeDamage(1);
+            if (enemy.isDead()) {
+                this.enemyManager.removeEnemy(enemyIndex);
+            }
         });
+
+        const enemyBullets = allProjectiles.filter(p => p.owner === "enemy");
+        for (let i = 0; i < enemyBullets.length; i++) {
+            const bullet = enemyBullets[i];
+            const playerRadius = this.player.config.bodyRadius ?? 20;
+            const bulletRadius = bullet.graphic.width * 0.5;
+            const dx = bullet.graphic.x - this.player.x;
+            const dy = bullet.graphic.y - this.player.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            if (distance < playerRadius + bulletRadius) {
+                this.projectileManager.removeProjectileByObject(bullet);
+                this.player.takeDamage(1);
+                if (this.player.isDead()) {
+                    console.log("Player is dead!");
+                }
+            }
+        }
+
+        for (let i = 0; i < enemies.length; i++) {
+            const enemy = enemies[i];
+            const combinedRadius =
+                (this.player.config.bodyRadius ?? 20) +
+                (enemy.config.bodyRadius ?? 20);
+            const dx = this.player.x - enemy.x;
+            const dy = this.player.y - enemy.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            if (distance < combinedRadius) {
+                this.player.takeDamage(1);
+                if (this.player.isDead()) {
+                    console.log("Player is dead!");
+                }
+            }
+        }
     }
 
     public update(delta: number) {

@@ -25,6 +25,8 @@ export default {
     weaponOffset: 32,
     weaponOscillation: 8,
     weaponOscillationSpeed: 0.007,
+    maxHealth: 4,
+    health: 4
   },
   enemy: {
     minSpawnRadius: 150,
@@ -48,5 +50,9 @@ export default {
     weaponOffset: 24,
     weaponOscillation: 8,
     weaponOscillationSpeed: 0.007,
+    maxHealth: 2,
+    health: 2,
+    canShoot: true,
+    shootCooldown: 1000
   }
 };

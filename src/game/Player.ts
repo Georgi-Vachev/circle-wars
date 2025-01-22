@@ -1,11 +1,6 @@
 import GameEntity from "./GameEntity";
 import { Graphics, Point } from "pixi.js";
-
-interface Projectile {
-    graphic: Graphics;
-    angle: number;
-    speed: number;
-}
+import { Projectile } from "./ProjectileManager";
 
 export default class Player extends GameEntity {
     private laser: Graphics;
@@ -111,7 +106,7 @@ export default class Player extends GameEntity {
 
         projectile.rotation = angle + Math.PI / 2;
 
-        return { graphic: projectile, angle, speed: 12 };
+        return { graphic: projectile, angle, speed: 12, owner: "player" };
     }
 
     private getWeaponTipPosition(): Point {

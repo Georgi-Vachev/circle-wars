@@ -1,6 +1,7 @@
 import { Graphics, Container, Point } from "pixi.js";
 
 export default class GameEntity extends Container {
+    public config: any;
     protected upperBody: Graphics;
     protected lowerBody: Container;
     protected leftLeg: Graphics;
@@ -8,7 +9,9 @@ export default class GameEntity extends Container {
     protected weapon: Graphics;
     protected movementDirection: Point;
     protected speed: number;
-    protected config: any;
+    protected health: number;
+    protected maxHealth: number;
+    protected healthBar: Graphics;
 
     constructor(config: any) {
         super();
@@ -17,11 +20,26 @@ export default class GameEntity extends Container {
         this.leftLeg = new Graphics();
         this.rightLeg = new Graphics();
         this.weapon = new Graphics();
+        this.healthBar = new Graphics();
         this.movementDirection = new Point(0, 0);
         this.speed = config.speed || 3;
         this.config = config;
+        this.maxHealth = config.maxHealth ?? 2;
+        this.health = config.health ?? this.maxHealth;
 
         this.init();
+    }
+
+    public takeDamage(amount: number) {
+        this.health -= amount;
+        if (this.health < 0) {
+            this.health = 0;
+        }
+        this.updateHealthBar();
+    }
+
+    public isDead(): boolean {
+        return this.health <= 0;
     }
 
     protected init() {
@@ -34,6 +52,29 @@ export default class GameEntity extends Container {
 
         this.addChild(this.lowerBody);
         this.addChild(this.upperBody);
+
+        this.createHealthBar();
+        this.updateHealthBar();
+    }
+
+    protected createHealthBar() {
+        this.healthBar = new Graphics();
+        const radius = this.config.bodyRadius ?? 20;
+        this.healthBar.y = radius + 10;
+        this.addChild(this.healthBar);
+    }
+
+    protected updateHealthBar() {
+        this.healthBar.clear();
+
+        this.healthBar.beginFill(0x000000);
+        this.healthBar.drawRect(-25, 0, 50, 5);
+        this.healthBar.endFill();
+
+        const healthRatio = this.health / this.maxHealth;
+        this.healthBar.beginFill(0xffee22);
+        this.healthBar.drawRect(-25, 0, 50 * healthRatio, 5);
+        this.healthBar.endFill();
     }
 
     protected createUpperBody() {

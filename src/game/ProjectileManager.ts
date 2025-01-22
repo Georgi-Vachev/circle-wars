@@ -1,10 +1,11 @@
 import { Container, Graphics, Point, Application } from "pixi.js";
 import { isOutOfBounds } from "../util";
 
-interface Projectile {
+export interface Projectile {
     graphic: Graphics;
     angle: number;
     speed: number;
+    owner: "player" | "enemy";
 }
 
 export default class ProjectileManager extends Container {
@@ -49,5 +50,12 @@ export default class ProjectileManager extends Container {
         const projectile = this.projectiles[index];
         this.removeChild(projectile.graphic);
         this.projectiles.splice(index, 1);
+    }
+
+    public removeProjectileByObject(projectileToRemove: Projectile) {
+        const index = this.projectiles.indexOf(projectileToRemove);
+        if (index !== -1) {
+            this.removeProjectile(index);
+        }
     }
 }

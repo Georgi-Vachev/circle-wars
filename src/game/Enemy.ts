@@ -1,17 +1,19 @@
 import GameEntity from "./GameEntity";
-import { Point } from "pixi.js";
+import { Graphics, Point } from "pixi.js";
+import { Projectile } from "./ProjectileManager";
 
 export default class Enemy extends GameEntity {
-    private changeDirectionTimer: number;
+    protected changeDirectionTimer: number;
 
     constructor(config: any, playerPosition: Point) {
         super(config);
+
         this.changeDirectionTimer = 0;
         this.spawnAroundCenter(playerPosition);
         this.setRandomDirection();
     }
 
-    private spawnAroundCenter(appCenter: Point) {
+    protected spawnAroundCenter(appCenter: Point) {
         const randomAngle = Math.random() * Math.PI * 2;
         const randomRadius = this.config.minSpawnRadius + Math.random() * (this.config.maxSpawnRadius - this.config.minSpawnRadius);
 
@@ -64,5 +66,44 @@ export default class Enemy extends GameEntity {
             this.movementDirection.y *= -1;
             this.y = Math.max(0, Math.min(window.innerHeight - this.upperBody.height, this.y));
         }
+    }
+
+    public shootAt(targetPosition: Point): Projectile | null {
+        if (!this.config.canShoot) {
+            return null;
+        }
+
+        const weaponTip = this.getWeaponTipPosition();
+        const projectile = new Graphics();
+        projectile.beginFill(0xffff00);
+        projectile.drawCircle(0, 0, 4);
+        projectile.endFill();
+        projectile.x = this.x + weaponTip.x;
+        projectile.y = this.y + weaponTip.y;
+
+        const dx = targetPosition.x - (this.x + weaponTip.x);
+        const dy = targetPosition.y - (this.y + weaponTip.y);
+
+        const angle = Math.atan2(dy, dx);
+
+        projectile.rotation = angle + Math.PI / 2;
+
+        return {
+            graphic: projectile,
+            angle,
+            speed: 6,
+            owner: "enemy"
+        };
+    }
+
+    private getWeaponTipPosition(): Point {
+        const weaponTip = new Point();
+        const weaponLength = 30;
+        const angle = this.upperBody.rotation;
+
+        weaponTip.x = Math.cos(angle) * weaponLength;
+        weaponTip.y = Math.sin(angle) * weaponLength;
+
+        return weaponTip;
     }
 }

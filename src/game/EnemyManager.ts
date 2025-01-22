@@ -1,13 +1,16 @@
-// EnemyManager.ts
 import { isOutOfBounds } from "../util";
 import Enemy from "./Enemy";
 import { Container, Point, Application } from "pixi.js";
+import ProjectileManager from "./ProjectileManager"; // Need this to add projectiles
 
 export default class EnemyManager extends Container {
     private enemies: Enemy[] = [];
     private spawnTimer = 0;
 
-    constructor(private config: any, private app: Application) {
+    // NEW: each enemy can have a shotTimer stored in a Map or an array
+    private enemyShootTimers = new WeakMap<Enemy, number>();
+
+    constructor(private config: any, private app: Application, private projectileManager: ProjectileManager) {
         super();
     }
 
@@ -25,11 +28,43 @@ export default class EnemyManager extends Container {
             const enemy = this.enemies[i];
             enemy.update(delta, this.app, playerPosition);
 
-            if (isOutOfBounds(enemy.x, enemy.y, enemy.width, enemy.height, window.innerWidth, window.innerHeight)) {
+            // Check boundaries
+            if (
+                isOutOfBounds(
+                    enemy.x,
+                    enemy.y,
+                    enemy.width,
+                    enemy.height,
+                    window.innerWidth,
+                    window.innerHeight
+                )
+            ) {
                 this.removeChild(enemy);
                 this.enemies.splice(i, 1);
+                continue;
             }
+
+            // NEW: handle enemy shooting if canShoot
+            this.handleEnemyShooting(delta, enemy, playerPosition);
         }
+    }
+
+    private handleEnemyShooting(delta: number, enemy: Enemy, playerPosition: Point) {
+        if (!enemy.config.canShoot) return;
+
+        let shootTimer = this.enemyShootTimers.get(enemy) ?? 0;
+
+        shootTimer -= delta * this.app.ticker.elapsedMS;
+        if (shootTimer <= 0) {
+            const projectile = enemy.shootAt(playerPosition);
+            if (projectile) {
+                this.projectileManager.addProjectile(projectile);
+            }
+
+            shootTimer = enemy.config.shootCooldown ?? 1000;
+        }
+
+        this.enemyShootTimers.set(enemy, shootTimer);
     }
 
     private spawnEnemy() {
@@ -40,6 +75,9 @@ export default class EnemyManager extends Container {
         const enemy = new Enemy(this.config.enemy, appCenter);
         this.enemies.push(enemy);
         this.addChild(enemy);
+
+        // Initialize shoot timer
+        this.enemyShootTimers.set(enemy, enemy.config.shootCooldown ?? 1000);
     }
 
     public getEnemies() {
@@ -50,5 +88,6 @@ export default class EnemyManager extends Container {
         const enemy = this.enemies[index];
         this.removeChild(enemy);
         this.enemies.splice(index, 1);
+        // Timer map auto-cleans for garbage-collected enemies
     }
 }
