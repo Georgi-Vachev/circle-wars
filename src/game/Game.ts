@@ -4,9 +4,9 @@ import Player from "./Player";
 import { checkCollisions } from "../util";
 import InputManager from "./InputManager";
 import EnemyManager from "./EnemyManager";
-import ProjectileManager, { Projectile } from "./ProjectileManager";
-import GameEntity from "./GameEntity";
+import ProjectileManager from "./ProjectileManager";
 import GameOverScreen from "./GameOverScreen";
+import UI from "./UI";
 
 export default class Game extends Container {
     private player: Player;
@@ -17,10 +17,10 @@ export default class Game extends Container {
     private enemyManager: EnemyManager;
     private projectileManager: ProjectileManager;
     private isGameOver: boolean;
-
     private config: any;
     private app: Application;
     private spawnTimer: number;
+    private ui: UI;
 
     constructor(config: any, app: Application) {
         super();
@@ -37,10 +37,12 @@ export default class Game extends Container {
         this.mousePosition = new Point();
         this.spawnTimer = 0;
         this.isGameOver = false;
+        this.ui = new UI(app);
 
         this.addChild(this.player);
         this.addChild(this.enemyManager);
         this.addChild(this.projectileManager);
+        this.addChildAt(this.ui, 3);
 
         window.addEventListener("mousedown", () => this.onMouseDown());
         window.addEventListener("mousemove", () => this.onMouseMove());
@@ -87,6 +89,10 @@ export default class Game extends Container {
             const enemy = enemies[enemyIndex];
             enemy.takeDamage(1);
             if (enemy.isDead()) {
+                if (enemy.config.scoreValue) {
+                    this.ui.addScore(enemy.config.scoreValue);
+                }
+
                 this.enemyManager.removeEnemy(enemyIndex);
             }
         });
@@ -135,13 +141,14 @@ export default class Game extends Container {
         this.player.update(delta);
         this.enemyManager.update(delta, new Point(this.player.x, this.player.y));
         this.projectileManager.update();
+        this.ui.update(delta * this.app.ticker.elapsedMS / 1000);
 
         this.shotCooldown -= delta * this.app.ticker.elapsedMS;
         this.spawnTimer -= delta * this.app.ticker.elapsedMS;
 
         if (this.isShooting && this.shotCooldown <= 0) {
             this.shootProjectile();
-            this.shotCooldown = 500;
+            this.shotCooldown = 200;
         }
 
         this.checkCollisions();
@@ -181,10 +188,15 @@ export default class Game extends Container {
         this.enemyManager = new EnemyManager(this.config, this.app, this.projectileManager);
         this.addChild(this.enemyManager);
 
-        this.shotCooldown = 500;
+        this.shotCooldown = 200;
         this.isShooting = false;
         this.mousePosition.set(0, 0);
         this.spawnTimer = 0;
         this.isGameOver = false;
+        this.ui.reset();
+    }
+
+    public resize() {
+        this.ui.resize();
     }
 }

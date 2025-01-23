@@ -1,4 +1,4 @@
-import { Graphics, DisplayObject } from "pixi.js";
+import { Graphics, DisplayObject, Container, Text, TextStyle } from "pixi.js";
 
 interface CollidableObject extends DisplayObject {
     width: number;
@@ -44,4 +44,42 @@ export function isOutOfBounds(
         y < 0 ||
         y + height > screenHeight
     );
+}
+
+export interface ButtonOptions {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    radius: number;
+    backgroundColor: number;
+    label: string;
+    labelStyle?: Partial<TextStyle>;
+    onClick?: () => void;
+}
+
+export function createButton(opts: ButtonOptions): Container {
+    const container = new Container();
+
+    const button = new Graphics();
+    button.beginFill(opts.backgroundColor);
+    button.drawRoundedRect(-opts.width / 2, -opts.height / 2, opts.width, opts.height, opts.radius);
+    button.endFill();
+    button.interactive = true;
+    button.cursor = "pointer";
+    container.addChild(button);
+
+    const style = new TextStyle({ fill: "#000000", fontSize: 18, ...opts.labelStyle });
+    const labelText = new Text(opts.label, style);
+    labelText.anchor.set(0.5);
+    container.addChild(labelText);
+
+    container.x = opts.x;
+    container.y = opts.y;
+
+    if (opts.onClick) {
+        button.on("pointerdown", opts.onClick);
+    }
+
+    return container;
 }

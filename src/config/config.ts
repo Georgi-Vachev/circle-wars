@@ -53,6 +53,7 @@ export default {
     maxHealth: 2,
     health: 2,
     canShoot: true,
-    shootCooldown: 1000
+    shootCooldown: 1000,
+    scoreValue: 1
   }
 };

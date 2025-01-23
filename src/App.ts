@@ -34,6 +34,7 @@ export default class App extends Application {
         const height = window.innerHeight - this._config.margin * 2;
 
         this.renderer.resize(width, height);
+        this._game.resize();
 
         (this.view as HTMLCanvasElement).style.position = "absolute";
         (this.view as HTMLCanvasElement).style.left = `${this._config.margin}px`;

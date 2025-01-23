@@ -1,5 +1,5 @@
 import { Container, Graphics, Text, TextStyle } from "pixi.js";
-import gsap from "gsap";
+import { createButton } from "../util"; // Adjust import path as needed
 
 interface GameOverConfig {
     screenWidth: number;
@@ -17,6 +17,7 @@ export default class GameOverScreen extends Container {
         this._config = config;
         this.onRestart = onRestart;
         this.addBackground();
+        this.addText();
         this.addButton();
     }
 
@@ -28,35 +29,31 @@ export default class GameOverScreen extends Container {
         this.addChild(bg);
     }
 
-    private addButton() {
+    private addText() {
         const style = new TextStyle({ fill: "#ffffff", fontSize: 50 });
         const gameOverText = new Text("Game Over", style);
         gameOverText.anchor.set(0.5);
         gameOverText.x = this._config.screenWidth / 2;
         gameOverText.y = this._config.screenHeight / 2 - 50;
         this.addChild(gameOverText);
+    }
 
-        const button = new Graphics();
-        button.beginFill(0x00ff00);
-        button.drawRect(-50, -25, 100, 50);
-        button.endFill();
-        button.x = this._config.screenWidth / 2;
-        button.y = this._config.screenHeight / 2 + 50;
-        button.interactive = true;
-        button.cursor = "pointer";
-        this.addChild(button);
-
-        const buttonTextStyle = new TextStyle({ fill: "#000000", fontSize: 20 });
-        const buttonText = new Text("Play Again", buttonTextStyle);
-        buttonText.anchor.set(0.5);
-        buttonText.x = this._config.screenWidth / 2;
-        buttonText.y = this._config.screenHeight / 2 + 50;
-        this.addChild(buttonText);
-
-        button.on("pointerdown", () => {
-            if (this.onRestart) {
-                this.onRestart();
+    private addButton() {
+        const playAgainButton = createButton({
+            x: this._config.screenWidth / 2,
+            y: this._config.screenHeight / 2 + 50,
+            width: 100,
+            height: 50,
+            radius: 10,
+            backgroundColor: 0x00ff00,
+            label: "Play Again",
+            labelStyle: { fill: "#000000", fontSize: 20 },
+            onClick: () => {
+                if (this.onRestart) {
+                    this.onRestart();
+                }
             }
         });
+        this.addChild(playAgainButton);
     }
 }

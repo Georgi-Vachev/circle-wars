@@ -16,7 +16,7 @@ export default class EnemyManager extends Container {
     public update(delta: number, playerPosition: Point) {
         this.spawnTimer -= delta * this.app.ticker.elapsedMS;
 
-        if (this.spawnTimer <= 0 && this.enemies.length < 4) {
+        if (this.spawnTimer <= 0 && this.enemies.length < 3) {
             this.spawnEnemy();
             this.spawnTimer = 500 + Math.random() * 2000;
         }
