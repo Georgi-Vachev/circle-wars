@@ -1,16 +1,19 @@
 import GameEntity from "./GameEntity";
-import { Graphics, Point } from "pixi.js";
+import { Application, Graphics, Point } from "pixi.js";
 import { Projectile } from "./ProjectileManager";
 
 export default class Player extends GameEntity {
+    private app: Application;
     private laser: Graphics;
     private keys: Record<string, boolean>;
     private mousePosition: Point;
     private isMoving: boolean;
     private walkingDirection: Point;
 
-    constructor(config: any) {
+    constructor(app: Application, config: any) {
         super(config);
+
+        this.app = app;
         this.laser = new Graphics();
         this.keys = {};
         this.mousePosition = new Point();
@@ -88,6 +91,9 @@ export default class Player extends GameEntity {
     private updatePosition(delta: number) {
         this.x += this.walkingDirection.x * this.speed * delta;
         this.y += this.walkingDirection.y * this.speed * delta;
+
+        this.x = Math.max(this.upperBody.width / 2, Math.min(this.app.renderer.width - this.upperBody.width / 2, this.x));
+        this.y = Math.max(this.upperBody.height / 2, Math.min(this.app.renderer.height - this.upperBody.height / 2, this.y));
     }
 
     public shootProjectile(mousePosition: Point): Projectile {

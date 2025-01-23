@@ -1,13 +1,15 @@
 import GameEntity from "./GameEntity";
-import { Graphics, Point } from "pixi.js";
+import { Application, Graphics, Point } from "pixi.js";
 import { Projectile } from "./ProjectileManager";
 
 export default class Enemy extends GameEntity {
     protected changeDirectionTimer: number;
+    private app: Application;
 
-    constructor(config: any, playerPosition: Point) {
+    constructor(app: Application, config: any, playerPosition: Point) {
         super(config);
 
+        this.app = app;
         this.changeDirectionTimer = 0;
         this.spawnAroundCenter(playerPosition);
         this.setRandomDirection();
@@ -57,14 +59,14 @@ export default class Enemy extends GameEntity {
         this.x += this.movementDirection.x * this.speed * delta;
         this.y += this.movementDirection.y * this.speed * delta;
 
-        if (this.x <= 0 || this.x >= window.innerWidth - this.upperBody.width) {
+        if (this.x <= 0 || this.x >= this.app.renderer.width - this.upperBody.width) {
             this.movementDirection.x *= -1;
-            this.x = Math.max(100, Math.min(window.innerWidth - this.upperBody.width, this.x));
+            this.x = Math.max(0, Math.min(this.app.renderer.width - this.upperBody.width, this.x));
         }
 
-        if (this.y <= 0 || this.y >= window.innerHeight - this.upperBody.height) {
+        if (this.y <= 0 || this.y >= this.app.renderer.height - this.upperBody.height) {
             this.movementDirection.y *= -1;
-            this.y = Math.max(0, Math.min(window.innerHeight - this.upperBody.height, this.y));
+            this.y = Math.max(0, Math.min(this.app.renderer.height - this.upperBody.height, this.y));
         }
     }
 

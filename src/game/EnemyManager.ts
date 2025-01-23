@@ -4,13 +4,16 @@ import { Container, Point, Application } from "pixi.js";
 import ProjectileManager from "./ProjectileManager";
 
 export default class EnemyManager extends Container {
+    private app: Application;
     private enemies: Enemy[] = [];
     private spawnTimer = 0;
 
     private enemyShootTimers = new WeakMap<Enemy, number>();
 
-    constructor(private config: any, private app: Application, private projectileManager: ProjectileManager) {
+    constructor(private config: any, app: Application, private projectileManager: ProjectileManager) {
         super();
+
+        this.app = app;
     }
 
     public update(delta: number, playerPosition: Point) {
@@ -67,7 +70,7 @@ export default class EnemyManager extends Container {
             this.app.renderer.width / 2,
             this.app.renderer.height / 2
         );
-        const enemy = new Enemy(this.config.enemy, appCenter);
+        const enemy = new Enemy(this.app, this.config.enemy, appCenter);
         this.enemies.push(enemy);
         this.addChild(enemy);
 

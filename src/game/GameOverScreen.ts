@@ -42,7 +42,7 @@ export default class GameOverScreen extends Container {
         const playAgainButton = createButton({
             x: this._config.screenWidth / 2,
             y: this._config.screenHeight / 2 + 50,
-            width: 100,
+            width: 110,
             height: 50,
             radius: 10,
             backgroundColor: 0x00ff00,

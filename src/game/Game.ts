@@ -30,7 +30,7 @@ export default class Game extends Container {
         this.inputManager = new InputManager();
         this.projectileManager = new ProjectileManager(app);
         this.enemyManager = new EnemyManager(config, app, this.projectileManager);
-        this.player = new Player(this.config.player);
+        this.player = new Player(app, this.config.player);
 
         this.shotCooldown = 500;
         this.isShooting = false;
@@ -126,10 +126,18 @@ export default class Game extends Container {
             const distance = Math.sqrt(dx * dx + dy * dy);
 
             if (distance < combinedRadius) {
-                this.player.takeDamage(1);
+                this.player.config.hasThorns ? enemy.takeDamage(1) : this.player.takeDamage(1);
                 if (this.player.isDead()) {
                     this.gameOver();
                     return;
+                }
+
+                if (enemy.isDead()) {
+                    if (enemy.config.scoreValue) {
+                        this.ui.addScore(enemy.config.scoreValue);
+                    }
+
+                    this.enemyManager.removeEnemy(i);
                 }
             }
         }
@@ -182,7 +190,7 @@ export default class Game extends Container {
         this.projectileManager.removeChildren();
 
         this.removeChild(this.player);
-        this.player = new Player(this.config.player);
+        this.player = new Player(this.app, this.config.player);
         this.addChild(this.player);
 
         this.enemyManager = new EnemyManager(this.config, this.app, this.projectileManager);

@@ -26,7 +26,8 @@ export default {
     weaponOscillation: 8,
     weaponOscillationSpeed: 0.007,
     maxHealth: 4,
-    health: 4
+    health: 4,
+    hasThorns: false,
   },
   enemy: {
     minSpawnRadius: 150,
