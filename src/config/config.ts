@@ -53,7 +53,7 @@ export default {
     weaponOscillationSpeed: 0.007,
     maxHealth: 2,
     health: 2,
-    canShoot: true,
+    canShoot: false,
     shootCooldown: 1000,
     scoreValue: 1
   }

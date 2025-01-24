@@ -1,47 +1,61 @@
-import { Container, Graphics, Text, TextStyle } from "pixi.js";
-import { createButton } from "../util"; // Adjust import path as needed
-
-interface GameOverConfig {
-    screenWidth: number;
-    screenHeight: number;
-}
+import { Application, Container, Graphics, Text, TextStyle } from "pixi.js";
+import { createButton } from "../util";
 
 type OnRestart = () => void;
 
 export default class GameOverScreen extends Container {
-    private _config: GameOverConfig;
+    private app: Application;
+    private overlay?: Graphics;
+    private gameOverText?: Text;
+    private playAgainButton?: Container;
     private onRestart: OnRestart;
 
-    constructor(onRestart: OnRestart, config: GameOverConfig) {
+    constructor(app: Application, onRestart: OnRestart) {
         super();
-        this._config = config;
+        this.app = app
         this.onRestart = onRestart;
         this.addBackground();
         this.addText();
         this.addButton();
     }
 
+    public resize() {
+        if (this.overlay) {
+            this.overlay.clear();
+            this.overlay.beginFill(0x000000, 0.7);
+            this.overlay.drawRect(0, 0, this.app.renderer.width, this.app.renderer.height);
+            this.overlay.endFill();
+        }
+
+        if (this.gameOverText) {
+            this.gameOverText.x = this.app.renderer.width / 2;
+            this.gameOverText.y = this.app.renderer.height / 2 - 50;
+        }
+
+        this.playAgainButton?.position.set(this.app.renderer.width / 2, this.app.renderer.height / 2 + 50);
+    }
+
     private addBackground() {
-        const bg = new Graphics();
-        bg.beginFill(0x000000, 0.7);
-        bg.drawRect(0, 0, this._config.screenWidth, this._config.screenHeight);
-        bg.endFill();
-        this.addChild(bg);
+        this.overlay = new Graphics();
+        this.overlay.beginFill(0x000000, 0.7);
+        this.overlay.drawRect(0, 0, this.app.renderer.width, this.app.renderer.height);
+        this.overlay.endFill();
+        this.addChild(this.overlay);
     }
 
     private addText() {
         const style = new TextStyle({ fill: "#ffffff", fontSize: 50 });
-        const gameOverText = new Text("Game Over", style);
-        gameOverText.anchor.set(0.5);
-        gameOverText.x = this._config.screenWidth / 2;
-        gameOverText.y = this._config.screenHeight / 2 - 50;
-        this.addChild(gameOverText);
+        this.gameOverText = new Text("Game Over", style);
+        this.gameOverText.anchor.set(0.5);
+        this.gameOverText.x = this.app.renderer.width / 2;
+        this.gameOverText.y = this.app.renderer.height / 2 - 50;
+        this.addChild(this.gameOverText);
     }
 
     private addButton() {
-        const playAgainButton = createButton({
-            x: this._config.screenWidth / 2,
-            y: this._config.screenHeight / 2 + 50,
+        this.playAgainButton = createButton({
+            x: this.app.renderer.width / 2,
+            y: this.app.renderer.height / 2 + 50,
             width: 110,
             height: 50,
             radius: 10,
@@ -54,6 +68,8 @@ export default class GameOverScreen extends Container {
                 }
             }
         });
-        this.addChild(playAgainButton);
+
+        this.playAgainButton.position.set(this.app.renderer.width / 2, this.app.renderer.height / 2 + 50);
+        this.addChild(this.playAgainButton);
     }
 }

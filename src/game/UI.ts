@@ -1,5 +1,6 @@
 import { Container, Text, TextStyle, Graphics, Application } from "pixi.js";
 import { createButton } from "../util";
+import { EVENTS } from "./Game";
 
 export default class UI extends Container {
     static readonly BONUS_GAME_COUNT_DOWN = 3;
@@ -29,7 +30,7 @@ export default class UI extends Container {
             label: "Start Bonus Game!",
             labelStyle: { fill: "#000000", fontSize: 18 },
             onClick: () => {
-                console.log("Bonus Game Started!");
+                this.emit(EVENTS.START_BONUS_GAME);
             }
         });
 

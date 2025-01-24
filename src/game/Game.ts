@@ -7,7 +7,11 @@ import EnemyManager from "./EnemyManager";
 import ProjectileManager from "./ProjectileManager";
 import GameOverScreen from "./GameOverScreen";
 import UI from "./UI";
+import BonusGameManager from "./BonusGameManager";
 
+export const EVENTS = {
+    START_BONUS_GAME: "startBonusGame",
+}
 export default class Game extends Container {
     private player: Player;
     private shotCooldown: number;
@@ -21,6 +25,9 @@ export default class Game extends Container {
     private app: Application;
     private spawnTimer: number;
     private ui: UI;
+    private gameOverScreen?: GameOverScreen;
+    private bonusGameManager: BonusGameManager;
+    private isBonusGameActive: boolean;
 
     constructor(config: any, app: Application) {
         super();
@@ -31,23 +38,23 @@ export default class Game extends Container {
         this.projectileManager = new ProjectileManager(app);
         this.enemyManager = new EnemyManager(config, app, this.projectileManager);
         this.player = new Player(app, this.config.player);
+        this.bonusGameManager = new BonusGameManager(app);
 
         this.shotCooldown = 500;
         this.isShooting = false;
         this.mousePosition = new Point();
         this.spawnTimer = 0;
         this.isGameOver = false;
+        this.isBonusGameActive = false;
         this.ui = new UI(app);
 
         this.addChild(this.player);
         this.addChild(this.enemyManager);
         this.addChild(this.projectileManager);
         this.addChildAt(this.ui, 3);
+        this.addChild(this.bonusGameManager);
 
-        window.addEventListener("mousedown", () => this.onMouseDown());
-        window.addEventListener("mousemove", () => this.onMouseMove());
-        window.addEventListener("keydown", () => this.onKeyDown());
-        window.addEventListener("keyup", () => this.onKeyUp());
+        this.setupListeners();
     }
 
     private onMouseDown() {
@@ -144,7 +151,7 @@ export default class Game extends Container {
     }
 
     public update(delta: number) {
-        if (this.isGameOver) return;
+        if (this.isGameOver || this.isBonusGameActive) return;
 
         this.player.update(delta);
         this.enemyManager.update(delta, new Point(this.player.x, this.player.y));
@@ -166,23 +173,23 @@ export default class Game extends Container {
         if (this.isGameOver) return;
         this.isGameOver = true;
 
-        const gameOverScreen = new GameOverScreen(() => {
-            gsap.to(gameOverScreen, {
-                duration: 0.5,
-                alpha: 0,
-                onComplete: () => {
-                    this.removeChild(gameOverScreen);
-                    this.restartGame();
-                }
-            });
-        }, {
-            screenWidth: this.app.renderer.width,
-            screenHeight: this.app.renderer.height
+        this.gameOverScreen = new GameOverScreen(this.app, () => {
+            if (this.gameOverScreen) {
+                gsap.to(this.gameOverScreen, {
+                    duration: 0.5,
+                    alpha: 0,
+                    onComplete: () => {
+                        if (this.gameOverScreen)
+                            this.removeChild(this.gameOverScreen);
+                        this.restartGame();
+                    }
+                });
+            }
         });
 
-        gameOverScreen.alpha = 0;
-        this.addChild(gameOverScreen);
-        gsap.to(gameOverScreen, { duration: 1, alpha: 1 });
+        this.gameOverScreen.alpha = 0;
+        this.addChild(this.gameOverScreen);
+        gsap.to(this.gameOverScreen, { duration: 1, alpha: 1 });
     }
 
     private restartGame() {
@@ -206,5 +213,19 @@ export default class Game extends Container {
 
     public resize() {
         this.ui.resize();
+        this.bonusGameManager.resize();
+        this.gameOverScreen?.resize();
+    }
+
+    private setupListeners() {
+        window.addEventListener("mousedown", () => this.onMouseDown());
+        window.addEventListener("mousemove", () => this.onMouseMove());
+        window.addEventListener("keydown", () => this.onKeyDown());
+        window.addEventListener("keyup", () => this.onKeyUp());
+
+        this.ui.on(EVENTS.START_BONUS_GAME, () => {
+            this.isBonusGameActive = true;
+            this.bonusGameManager.startRandomBonusGame();
+        })
     }
 }
