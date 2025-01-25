@@ -8,11 +8,14 @@ import ProjectileManager from "./ProjectileManager";
 import GameOverScreen from "./GameOverScreen";
 import UI from "./UI";
 import BonusGameManager from "./BonusGameManager";
+import { LayerManager, Layers } from "./LayerManager";
 
 export const EVENTS = {
     START_BONUS_GAME: "startBonusGame",
 }
 export default class Game extends Container {
+    public static LayerManager = new LayerManager()
+
     private player: Player;
     private shotCooldown: number;
     private isShooting: boolean;
@@ -39,6 +42,7 @@ export default class Game extends Container {
         this.enemyManager = new EnemyManager(config, app, this.projectileManager);
         this.player = new Player(app, this.config.player);
         this.bonusGameManager = new BonusGameManager(app);
+        this.ui = new UI(app);
 
         this.shotCooldown = 500;
         this.isShooting = false;
@@ -46,15 +50,29 @@ export default class Game extends Container {
         this.spawnTimer = 0;
         this.isGameOver = false;
         this.isBonusGameActive = false;
-        this.ui = new UI(app);
 
+        this.addChild(this.bonusGameManager);
+        this.addChild(this.ui);
         this.addChild(this.player);
         this.addChild(this.enemyManager);
         this.addChild(this.projectileManager);
-        this.addChildAt(this.ui, 3);
-        this.addChild(this.bonusGameManager);
+
+        Game.LayerManager.assignZOrder(this.enemyManager, Layers.GAME_ENTITIES);
+        Game.LayerManager.assignZOrder(this.player, Layers.GAME_ENTITIES);
+        Game.LayerManager.assignZOrder(this.ui, Layers.UI);
+        Game.LayerManager.assignZOrder(this.bonusGameManager, Layers.BONUS_GAME);
+
+        this.addLayerManager()
 
         this.setupListeners();
+    }
+
+    private addLayerManager() {
+        this.children.forEach((child) => (child.parentLayer = Game.LayerManager))
+
+        console.error(this.children)
+
+        this.addChild(Game.LayerManager)
     }
 
     private onMouseDown() {
@@ -209,6 +227,9 @@ export default class Game extends Container {
         this.spawnTimer = 0;
         this.isGameOver = false;
         this.ui.reset();
+
+        Game.LayerManager.assignZOrder(this.enemyManager, Layers.GAME_ENTITIES);
+        Game.LayerManager.assignZOrder(this.player, Layers.GAME_ENTITIES);
     }
 
     public resize() {

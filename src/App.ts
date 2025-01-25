@@ -1,5 +1,6 @@
 import { Application } from "pixi.js";
 import Game from "./game/Game";
+import { Stage } from "@pixi/layers";
 
 export default class App extends Application {
     private _config: any;
@@ -8,6 +9,7 @@ export default class App extends Application {
     constructor(config: any) {
         super(config.renderer);
 
+        this.stage = new Stage()
         this._config = config;
         this._game = this._createGame(config);
 
