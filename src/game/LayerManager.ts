@@ -25,6 +25,5 @@ export class LayerManager extends Layer {
     assignZOrder(element: PIXI.Sprite | PIXI.Container, layer: Layers) {
         element.parentLayer = this
         element.zOrder = this.LayersOrder.indexOf(layer)
-        console.error(element.zOrder)
     }
 }

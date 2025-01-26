@@ -35,7 +35,7 @@ export default class BonusGameManager extends Container {
 
         this.overlay.visible = true
         const randomIndex = Math.floor(Math.random() * this.bonusGames.length)
-        const BonusGameClass = this.bonusGames[randomIndex]
+        const BonusGameClass = this.bonusGames[0]
         this.currentBonusGame = new BonusGameClass(this.app)
         this.addChild(this.currentBonusGame)
             ; (this.currentBonusGame as any).init?.()

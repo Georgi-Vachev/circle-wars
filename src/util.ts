@@ -83,3 +83,50 @@ export function createButton(opts: ButtonOptions): Container {
 
     return container;
 }
+
+import * as PIXI from 'pixi.js';
+
+export function createCircleSpriteWithText(
+    text: string,
+    radius: number = 50,
+    fillColor: number = 0xffffff,
+    textStyleOptions: Partial<PIXI.TextStyle> = {}
+): PIXI.Container {
+    // Create a container to hold both the circle graphic and the text
+    const container = new PIXI.Container();
+
+    // Create and draw the circle
+    const circle = new PIXI.Graphics();
+    circle.beginFill(fillColor);
+    circle.drawCircle(0, 0, radius);
+    circle.endFill();
+
+    // Add the circle to our container
+    container.addChild(circle);
+
+    // Merge default and passed-in text style options
+    const textStyle = new PIXI.TextStyle({
+        fontFamily: 'Arial',
+        fill: '#000000',
+        align: 'center',
+        ...textStyleOptions,
+    });
+
+    // Create the text object
+    const label = new PIXI.Text(text, textStyle);
+
+    // Position the text so it's centered within the circle
+    label.anchor.set(0.5);
+
+    // Add the text to our container
+    container.addChild(label);
+
+    // Return the container, which groups the circle and text together
+    return container;
+}
+
+
+// Example usage:
+// const circleSprite = createCircleSpriteWithText("Hello!", 40, 0xff6600, { fill: '#ffffff' });
+// app.stage.addChild(circleSprite);
+
