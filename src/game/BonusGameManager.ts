@@ -3,6 +3,7 @@ import SlotBG from "./bonusGames/SlotBG"
 import TargetPracticeBG from "./bonusGames/TargetPracticeBG"
 import QuizBG from "./bonusGames/QuizBG"
 import QuickMathsBG from "./bonusGames/QuickMathsBG"
+import { EVENTS } from "./Game"
 
 
 export default class BonusGameManager extends Container {
@@ -37,8 +38,14 @@ export default class BonusGameManager extends Container {
         const randomIndex = Math.floor(Math.random() * this.bonusGames.length)
         const BonusGameClass = this.bonusGames[0]
         this.currentBonusGame = new BonusGameClass(this.app)
+
+        this.currentBonusGame.on(EVENTS.END_BONUS_GAME, () => {
+            this.overlay.visible = false
+            this.destroyCurrentBonusGame()
+            this.emit(EVENTS.END_BONUS_GAME)
+        })
+
         this.addChild(this.currentBonusGame)
-            ; (this.currentBonusGame as any).init?.()
     }
 
     private addOverley(): void {
@@ -48,5 +55,13 @@ export default class BonusGameManager extends Container {
         this.overlay.visible = false
 
         this.addChild(this.overlay)
+    }
+
+    private destroyCurrentBonusGame(): void {
+        if (this.currentBonusGame) {
+            this.removeChild(this.currentBonusGame)
+            this.currentBonusGame.destroy()
+            this.currentBonusGame = null
+        }
     }
 }

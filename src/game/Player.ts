@@ -1,6 +1,7 @@
 import GameEntity from "./GameEntity";
 import { Application, Graphics, Point } from "pixi.js";
 import { Projectile } from "./ProjectileManager";
+import Game from "./Game";
 
 export default class Player extends GameEntity {
     private app: Application;
@@ -10,8 +11,8 @@ export default class Player extends GameEntity {
     private isMoving: boolean;
     private walkingDirection: Point;
 
-    constructor(app: Application, config: any) {
-        super(config);
+    constructor(app: Application) {
+        super(Game.config.player);
 
         this.app = app;
         this.laser = new Graphics();

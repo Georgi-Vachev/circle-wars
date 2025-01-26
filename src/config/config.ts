@@ -53,8 +53,15 @@ export default {
     weaponOscillationSpeed: 0.007,
     maxHealth: 2,
     health: 2,
-    canShoot: false,
+    canShoot: true,
     shootCooldown: 1000,
     scoreValue: 1
-  }
+  },
+  powerUps: {
+    doubleDMG: { text: 'x2\nDMG', color: 0x332244 },
+    thorns: { text: 'THORNS', color: 0x4f213e },
+    heal: { text: 'HEAL', color: 0xaafe31 },
+    movementSpeed: { text: 'MOVE\nSPEED', color: 0xf7a1e9 },
+    shootSpeed: { text: 'SHOOT\nSPEED', color: 0xb1c4d8 }
+  },
 };

@@ -2,6 +2,7 @@ import { isOutOfBounds } from "../util";
 import Enemy from "./Enemy";
 import { Container, Point, Application } from "pixi.js";
 import ProjectileManager from "./ProjectileManager";
+import Game from "./Game";
 
 export default class EnemyManager extends Container {
     private app: Application;
@@ -10,7 +11,7 @@ export default class EnemyManager extends Container {
 
     private enemyShootTimers = new WeakMap<Enemy, number>();
 
-    constructor(private config: any, app: Application, private projectileManager: ProjectileManager) {
+    constructor(app: Application, private projectileManager: ProjectileManager) {
         super();
 
         this.app = app;
@@ -70,7 +71,7 @@ export default class EnemyManager extends Container {
             this.app.renderer.width / 2,
             this.app.renderer.height / 2
         );
-        const enemy = new Enemy(this.app, this.config.enemy, appCenter);
+        const enemy = new Enemy(this.app, Game.config.enemy, appCenter);
         this.enemies.push(enemy);
         this.addChild(enemy);
 

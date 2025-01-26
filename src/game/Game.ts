@@ -9,12 +9,15 @@ import GameOverScreen from "./GameOverScreen";
 import UI from "./UI";
 import BonusGameManager from "./BonusGameManager";
 import { LayerManager, Layers } from "./LayerManager";
+import config from "../config/config";
 
 export const EVENTS = {
     START_BONUS_GAME: "startBonusGame",
+    END_BONUS_GAME: "endBonusGame"
 }
 export default class Game extends Container {
     public static LayerManager = new LayerManager()
+    public static config = config
 
     private player: Player;
     private shotCooldown: number;
@@ -24,7 +27,6 @@ export default class Game extends Container {
     private enemyManager: EnemyManager;
     private projectileManager: ProjectileManager;
     private isGameOver: boolean;
-    private config: any;
     private app: Application;
     private spawnTimer: number;
     private ui: UI;
@@ -32,15 +34,14 @@ export default class Game extends Container {
     private bonusGameManager: BonusGameManager;
     private isBonusGameActive: boolean;
 
-    constructor(config: any, app: Application) {
+    constructor(app: Application) {
         super();
 
-        this.config = config;
         this.app = app;
         this.inputManager = new InputManager();
         this.projectileManager = new ProjectileManager(app);
-        this.enemyManager = new EnemyManager(config, app, this.projectileManager);
-        this.player = new Player(app, this.config.player);
+        this.enemyManager = new EnemyManager(app, this.projectileManager);
+        this.player = new Player(app);
         this.bonusGameManager = new BonusGameManager(app);
         this.ui = new UI(app);
 
@@ -69,8 +70,6 @@ export default class Game extends Container {
 
     private addLayerManager() {
         this.children.forEach((child) => (child.parentLayer = Game.LayerManager))
-
-        console.error(this.children)
 
         this.addChild(Game.LayerManager)
     }
@@ -215,10 +214,10 @@ export default class Game extends Container {
         this.projectileManager.removeChildren();
 
         this.removeChild(this.player);
-        this.player = new Player(this.app, this.config.player);
+        this.player = new Player(this.app);
         this.addChild(this.player);
 
-        this.enemyManager = new EnemyManager(this.config, this.app, this.projectileManager);
+        this.enemyManager = new EnemyManager(this.app, this.projectileManager);
         this.addChild(this.enemyManager);
 
         this.shotCooldown = 200;
@@ -247,6 +246,10 @@ export default class Game extends Container {
         this.ui.on(EVENTS.START_BONUS_GAME, () => {
             this.isBonusGameActive = true;
             this.bonusGameManager.startRandomBonusGame();
+        })
+
+        this.bonusGameManager.on(EVENTS.END_BONUS_GAME, () => {
+            this.isBonusGameActive = false;
         })
     }
 }

@@ -1,4 +1,4 @@
-import { Graphics, DisplayObject, Container, Text, TextStyle } from "pixi.js";
+import { Graphics, DisplayObject, Container, Text, TextStyle, Renderer, Sprite } from "pixi.js";
 
 interface CollidableObject extends DisplayObject {
     width: number;
@@ -87,25 +87,26 @@ export function createButton(opts: ButtonOptions): Container {
 import * as PIXI from 'pixi.js';
 
 export function createCircleSpriteWithText(
+    renderer: Renderer, // Pass the renderer instance
     text: string,
     radius: number = 50,
     fillColor: number = 0xffffff,
     textStyleOptions: Partial<PIXI.TextStyle> = {}
-): PIXI.Container {
-    // Create a container to hold both the circle graphic and the text
-    const container = new PIXI.Container();
+): Sprite {
+    // Create a container to hold the circle and text
+    const container = new Container();
 
     // Create and draw the circle
-    const circle = new PIXI.Graphics();
+    const circle = new Graphics();
     circle.beginFill(fillColor);
     circle.drawCircle(0, 0, radius);
     circle.endFill();
 
-    // Add the circle to our container
+    // Add the circle to the container
     container.addChild(circle);
 
     // Merge default and passed-in text style options
-    const textStyle = new PIXI.TextStyle({
+    const textStyle = new TextStyle({
         fontFamily: 'Arial',
         fill: '#000000',
         align: 'center',
@@ -113,16 +114,26 @@ export function createCircleSpriteWithText(
     });
 
     // Create the text object
-    const label = new PIXI.Text(text, textStyle);
+    const label = new Text(text, textStyle);
 
     // Position the text so it's centered within the circle
     label.anchor.set(0.5);
+    label.position.set(0, 0); // Center the text
 
-    // Add the text to our container
+    // Add the text to the container
     container.addChild(label);
 
-    // Return the container, which groups the circle and text together
-    return container;
+    // Generate a texture from the container using the renderer
+    const texture = renderer.generateTexture(container);
+
+    // Create a sprite from the generated texture
+    const sprite = new Sprite(texture);
+
+    // Center the sprite's anchor
+    sprite.anchor.set(0.5);
+
+    // Return the sprite
+    return sprite;
 }
 
 

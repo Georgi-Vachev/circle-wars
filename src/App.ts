@@ -1,17 +1,16 @@
 import { Application } from "pixi.js";
 import Game from "./game/Game";
 import { Stage } from "@pixi/layers";
+import config from './config/config';
 
 export default class App extends Application {
-    private _config: any;
     private _game: Game;
 
-    constructor(config: any) {
+    constructor() {
         super(config.renderer);
 
         this.stage = new Stage()
-        this._config = config;
-        this._game = this._createGame(config);
+        this._game = this._createGame();
 
         document.body.appendChild(this.view as HTMLCanvasElement);
 
@@ -23,8 +22,8 @@ export default class App extends Application {
         });
     }
 
-    _createGame(config: any) {
-        const game = new Game(config, this);
+    _createGame() {
+        const game = new Game(this);
 
         this.stage.addChild(game);
 
@@ -32,14 +31,14 @@ export default class App extends Application {
     }
 
     private _resizeCanvas() {
-        const width = window.innerWidth - this._config.margin * 2;
-        const height = window.innerHeight - this._config.margin * 2;
+        const width = window.innerWidth - config.margin * 2;
+        const height = window.innerHeight - config.margin * 2;
 
         this.renderer.resize(width, height);
         this._game.resize();
 
         (this.view as HTMLCanvasElement).style.position = "absolute";
-        (this.view as HTMLCanvasElement).style.left = `${this._config.margin}px`;
-        (this.view as HTMLCanvasElement).style.top = `${this._config.margin}px`;
+        (this.view as HTMLCanvasElement).style.left = `${config.margin}px`;
+        (this.view as HTMLCanvasElement).style.top = `${config.margin}px`;
     }
 }
