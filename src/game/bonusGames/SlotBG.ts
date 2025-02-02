@@ -12,7 +12,7 @@ export default class SlotBG extends Container {
     private spinButton?: Container;
     private collectButton?: Container;
     private closeButton?: Container;
-    private spinDuration = 2000; // Duration of the spin in ms
+    private spinDuration = 2000;
     private symbolHeight: number = 0;
 
     constructor(app: Application) {
@@ -71,7 +71,7 @@ export default class SlotBG extends Container {
 
         const reelWidth = this.reelsArea.width / 3;
         const reelHeight = this.reelsArea.height;
-        this.symbolHeight = reelHeight / 3; // Height of one visible symbol
+        this.symbolHeight = reelHeight / 3;
         const keys = Object.keys(this.sprites);
 
         for (let i = 0; i < 3; i++) {
@@ -94,7 +94,7 @@ export default class SlotBG extends Container {
 
             for (let j = 0; j < 5; j++) {
                 const randomKey = keys[Math.floor(Math.random() * keys.length)];
-                const sprite = new Sprite(this.sprites[randomKey].texture); // Create a new sprite with the same texture
+                const sprite = new Sprite(this.sprites[randomKey].texture);
                 sprite.position.set(reelWidth / 2, startY + j * this.symbolHeight);
                 sprite.anchor.set(0.5);
                 reel.addChild(sprite);
@@ -142,11 +142,10 @@ export default class SlotBG extends Container {
     private async spinReels() {
         this.spinButton!.visible = false;
 
-        const reelDelays = [0, 500, 1000]; // Delays for each reel (in milliseconds)
-        const isWinning = Math.random() < 0.65; // Determine win/lose before spinning
-        const winningSymbol = isWinning ? this.getRandomKey() : null; // Get winning symbol if winning
+        const reelDelays = [0, 500, 1000];
+        const isWinning = Math.random() < 0.65;
+        const winningSymbol = isWinning ? this.getRandomKey() : null;
 
-        // Start spinning all reels with staggered delays
         const spinPromises = this.reels.map((_, reelIndex) => {
             return new Promise<void>((resolve) => {
                 setTimeout(() => {
