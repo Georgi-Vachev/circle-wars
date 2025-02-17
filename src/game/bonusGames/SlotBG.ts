@@ -133,7 +133,7 @@ export default class SlotBG extends Container {
 
         button.position.set(
             this.app.renderer.width / 2,
-            this.reelsArea!.y + this.reelsArea!.height - button.height
+            this.app.renderer.height / 2 + this.reelsArea!.height / 2 + button.height
         );
 
         return button;
@@ -179,14 +179,15 @@ export default class SlotBG extends Container {
                 sprite.y += 10;
                 if (sprite.y > this.reelsArea!.height) {
                     sprite.y -= this.symbolHeight * reelSymbols.length;
-
                     if (
                         winningSymbol &&
-                        index === 3 &&
+                        index === 2 &&
                         elapsed >= duration - this.symbolHeight * 2
                     ) {
+                        console.error('winningSymbol', index, reelIndex)
                         sprite.texture = this.sprites[winningSymbol].texture;
                     } else {
+                        console.error('randomSymbol', index, reelIndex)
                         sprite.texture = this.getRandomTexture();
                     }
                 }
@@ -195,8 +196,8 @@ export default class SlotBG extends Container {
             if (elapsed < duration) {
                 requestAnimationFrame(spin);
             } else {
-                reelSymbols.forEach(sprite => {
-                    sprite.y = Math.round(sprite.y / this.symbolHeight) * this.symbolHeight - this.symbolHeight / 2;
+                reelSymbols.forEach((sprite, index) => {
+                    sprite.y = index * this.symbolHeight - this.symbolHeight / 2;
                 });
 
                 resolve();
